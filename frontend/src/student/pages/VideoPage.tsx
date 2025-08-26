@@ -19,14 +19,10 @@ export default function VideoPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-
-  const [liveProgress, setLiveProgress] = useState<{
-    watchedPercentage: number;
-    totalWatchTime: number;
-    isCompleted?: boolean;
-  }>({ 
-    watchedPercentage: 0, 
-    totalWatchTime: 0 
+  const [videoProgress, setVideoProgress] = useState({
+    totalWatchTime: 0,
+    watchedPercentage: 0,
+    isCompleted: false,
   });
 
   useEffect(() => {
@@ -50,14 +46,18 @@ export default function VideoPage() {
     loadVideos();
   }, [courseId, videoId]);
 
-  // Simplified progress update handler
-  const handleProgressUpdate = useCallback((progress: any) => {
-    console.log('Progress update received:', progress); // Debug log
-    setLiveProgress(progress);
+  // Proper progress update handler - always accept updates from the hook
+  const handleProgressUpdate = useCallback((progress) => {
+    // console.log('VideoPage received progress update:', progress);
+    setVideoProgress({
+      totalWatchTime: progress.totalWatchTime || 0,
+      watchedPercentage: progress.watchedPercentage || 0,
+      isCompleted: progress.isCompleted || false,
+    });
   }, []);
 
   const formatTime = (seconds: number = 0) =>
-     `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")} `;
+    `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
 
   if (isLoading) {
     return (
@@ -91,13 +91,13 @@ export default function VideoPage() {
     );
   }
 
- const currentIndex = videos.findIndex((v) => v.id === currentVideo.id);
+  const currentIndex = videos.findIndex((v) => v.id === currentVideo.id);
   const nextLesson = currentIndex >= 0 && currentIndex < videos.length - 1 ? videos[currentIndex + 1] : null;
   const prevLesson = currentIndex > 0 ? videos[currentIndex - 1] : null;
 
   const navigateToLesson = (lesson: Video | null) => {
     if (!lesson) return;
-    navigate( `/courses/${courseId}/video/${lesson.id} `);
+    navigate(`/courses/${courseId}/video/${lesson.id}`);
     setCurrentVideo(lesson);
     setIsPlaying(false);
   };
@@ -107,21 +107,21 @@ export default function VideoPage() {
       <DashboardLayout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
           <div className="relative z-10 p-6">
-            {/* Breadcrumb  */}
+            {/* Breadcrumb */}
             <nav className="mb-8 flex items-center gap-3 text-base">
               <Link to="/courses" className="hover:text-violet-600 flex items-center gap-2 font-medium">
                 <BookOpen className="h-5 w-5 text-violet-600" />
                 <span className="text-slate-700">Courses</span>
               </Link>
               <span className="text-violet-300 text-xl">›</span>
-              <Link to={ `/courses/${courseId} `} className="hover:text-violet-600 font-medium text-slate-700 truncate max-w-xs">
+              <Link to={`/courses/${courseId}`} className="hover:text-violet-600 font-medium text-slate-700 truncate max-w-xs">
                 Course
               </Link>
               <span className="text-violet-300 text-xl">›</span>
               <span className="font-bold text-slate-900">{currentVideo.title}</span>
             </nav>
 
-            {/* Video Info Card  */}
+            {/* Video Info Card */}
             <Card className="mb-8 bg-white/90 backdrop-blur-sm border-0">
               <CardHeader className="relative p-8">
                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
@@ -156,7 +156,7 @@ export default function VideoPage() {
               </CardHeader>
             </Card>
 
-           {/* Video Player  */}
+            {/* Video Player */}
             <Card className="overflow-hidden shadow-2xl bg-white border-0 mb-8">
               <div className="relative bg-black aspect-video rounded-t-2xl">
                 <VideoPlayer
@@ -165,7 +165,7 @@ export default function VideoPage() {
                   duration={currentVideo.duration}
                   playing={isPlaying}
                   setIsPlaying={setIsPlaying}
-                  seekPosition={currentVideo.progress?.totalWatchTime || 0}
+                  seekPosition={videoProgress.totalWatchTime}
                   onProgressUpdate={handleProgressUpdate}
                 />
               </div>
@@ -178,20 +178,32 @@ export default function VideoPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                      {Math.round(liveProgress.watchedPercentage)}%
+                      {Math.round(videoProgress.watchedPercentage)}%
                     </div>
-                    <div className="text-sm text-slate-500 font-medium">Complete</div>
+                    <div className="text-sm text-slate-500 font-medium">
+                      {videoProgress.isCompleted ? "Completed" : "In Progress"}
+                    </div>
                   </div>
                 </div>
                 <div className="mb-4">
-                  <Progress value={liveProgress.watchedPercentage} className="h-4 rounded-full bg-slate-200" />
+                  <Progress value={videoProgress.watchedPercentage} className="h-4 rounded-full bg-slate-200" />
                 </div>
                 <div className="flex justify-between text-sm text-slate-600 font-medium">
                   <span>
-                    Time: {formatTime(liveProgress.totalWatchTime)} / {formatTime(currentVideo.duration)}
+                    Maximum watched: {formatTime(videoProgress.totalWatchTime)} / {formatTime(currentVideo.duration)}
                   </span>
-                  <span>
-                    {liveProgress.watchedPercentage >= 100 ? "✓ Completed!" : "Keep watching to complete this lesson"}
+                  <span className="flex items-center gap-2">
+                    {videoProgress.isCompleted ? (
+                      <>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-green-600 font-semibold">✓ Completed!</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <span>Keep watching to complete this lesson</span>
+                        </>
+                    )}
                   </span>
                 </div>
               </div>

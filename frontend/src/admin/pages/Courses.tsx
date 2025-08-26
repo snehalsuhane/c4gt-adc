@@ -27,7 +27,7 @@ export default function Courses() {
   const [assignCourseModalCourseId, setAssignCourseModalCourseId] = useState<number | null>(null);
   const [videoModalCourseId, setVideoModalCourseId] = useState<number | null>(null);
   const [isCourseWizardOpen, setCourseWizardOpen] = useState(false);
-  
+
   useEffect(() => {
     if (!user) return;
     const fetchCourses = async () => {
@@ -53,9 +53,9 @@ export default function Courses() {
   const openCreateCourseWizard = () => setCourseWizardOpen(true);
 
   const handleCourseSaved = (newCourse) => {
-  setCourses((prev) => [newCourse, ...prev]);
-  setCourseWizardOpen(false);
-};
+    setCourses((prev) => [newCourse, ...prev]);
+    setCourseWizardOpen(false);
+  };
 
 
   const handleVideoAdded = async (video: Video) => {
@@ -219,11 +219,11 @@ export default function Courses() {
 
 
       {/* Add/Edit Modal */}
-<AdminCourseWizard
-  isOpen={isCourseWizardOpen}
-  onClose={() => setCourseWizardOpen(false)}
-  onSaved={handleCourseSaved}
-/>
+      <AdminCourseWizard
+        isOpen={isCourseWizardOpen}
+        onClose={() => setCourseWizardOpen(false)}
+        onSaved={handleCourseSaved}
+      />
 
       <AdminVideoModal
         isOpen={videoModalCourseId !== null}
@@ -233,11 +233,11 @@ export default function Courses() {
       />
 
       {assignCourseModalCourseId !== null && (
-  <AssignCourseModal
-    courseId={assignCourseModalCourseId}
-    onClose={() => setAssignCourseModalCourseId(null)}
-  />
-)}
+        <AssignCourseModal
+          courseId={assignCourseModalCourseId}
+          onClose={() => setAssignCourseModalCourseId(null)}
+        />
+      )}
 
     </div>
   );
