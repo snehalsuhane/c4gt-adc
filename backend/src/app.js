@@ -5,6 +5,8 @@ const helmet = require('helmet');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const adminRoutes = require('./routes/admin/index');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
