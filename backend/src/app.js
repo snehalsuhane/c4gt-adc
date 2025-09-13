@@ -5,6 +5,8 @@ const helmet = require('helmet');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const adminRoutes = require('./routes/admin/index');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -34,6 +36,12 @@ app.use('/api/metadata', metadataRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/quizzes', quizRoutes);
 
+
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to the Rohtak Guided Learning Tracker backend!',
+  });
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
